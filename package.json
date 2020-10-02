@@ -1,0 +1,26 @@
+{
+  "name": "swapi",
+  "type": "module",
+  "version": "0.0.1",
+  "description": "swapi",
+  "main": "index.js",
+  "scripts": {
+    "importData": "node src/swapiDev.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bendersx1/swapi.git"
+  },
+  "author": "Evgeniy Nosov",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bendersx1/swapi/issues"
+  },
+  "homepage": "https://github.com/bendersx1/swapi#readme",
+  "devDependencies": {},
+  "dependencies": {
+    "axios": "^0.20.0",
+    "config": "^3.3.2",
+    "mongoose": "^5.10.7"
+  }
+}
