@@ -1,3 +1,4 @@
 {
-  "mongoURI": "mongodb://localhost/swapi"
+  "mongoURI": "mongodb://localhost/swapi",
+  "port": 3335
 }

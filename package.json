@@ -5,7 +5,8 @@
   "description": "swapi",
   "main": "index.js",
   "scripts": {
-    "importData": "node src/swapiDev.js"
+    "importData": "node src/swapiDev.js",
+    "start": "node src/index.js"
   },
   "repository": {
     "type": "git",
@@ -21,6 +22,9 @@
   "dependencies": {
     "axios": "^0.20.0",
     "config": "^3.3.2",
+    "express": "^4.17.1",
+    "express-graphql": "^0.11.0",
+    "graphql": "^15.3.0",
     "mongoose": "^5.10.7"
   }
 }
