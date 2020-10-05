@@ -8,19 +8,6 @@ const birthYearSign = {
   ABY: 1
 };
 
-// const characterSchema = new mongoose.Schema({
-//   _id: mongoose.Schema.Types.ObjectId,
-//   name: String,
-//   species: [String],
-//   birthYear: Number,
-//   homePlanet: String,
-//   eye_color: String,
-//   height: Number,
-//   mass: Number
-// });
-
-// const CharacterModel = mongoose.model("Character", characterSchema);
-
 const prepareCharacterBeforeSave = character => {
   const {
     name,
@@ -65,7 +52,8 @@ const getData = (uri = "http://swapi.dev/api/people/") => {
   });
 };
 
-export const importData = () => {
+const importCharacters = () => {
+  console.log("- import data to database...");
   return connectDB()
     .then(() => CharacterModel.deleteMany({}))
     .then(() => getData())
@@ -73,8 +61,8 @@ export const importData = () => {
     .catch(err => console.log(err));
 };
 
-importData()
+importCharacters()
   .then(result => {
-    console.log("import complete");
+    console.log("- import complete\n");
   })
   .catch(err => console.log(err));

@@ -1,4 +1,4 @@
-import graphql from "graphql";
+import graphql, { GraphQLInt } from "graphql";
 import mongoose from "mongoose";
 import { connectDB } from "../../config/db.js";
 import { CharacterModel } from "../models/character.js";
@@ -10,11 +10,112 @@ const {
   GraphQLList
 } = graphql;
 
+const prepareData = ({ character, matches }) => {
+  const preparedMatches = matches.map(matchedCharacter => {
+    if (!matchedCharacter.birthYear) return matchedCharacter;
+    matchedCharacter.birthYear =
+      matchedCharacter.birthYear < 0
+        ? Math.abs(matchedCharacter.birthYear) + "ABY"
+        : Math.abs(matchedCharacter.birthYear) + "BBY";
+    return matchedCharacter;
+  });
+  return { character, matches: preparedMatches };
+};
+
+const countPercentage = ({ character, matches }) => {
+  const percentageMatches = matches.map(matchedCharacter => {
+    matchedCharacter.percentage = 0;
+    if (character.species[0] === matchedCharacter.species[0]) {
+      matchedCharacter.percentage += 30;
+    }
+    if (character.eyeColor === matchedCharacter.eyeColor) {
+      matchedCharacter.percentage += 20;
+    }
+    if (character.homePlanet === matchedCharacter.homePlanet) {
+      matchedCharacter.percentage += 5;
+    }
+    if (
+      matchedCharacter.birthYear >= character.birthYear - 100 &&
+      matchedCharacter.birthYear <= character.birthYear + 100
+    ) {
+      matchedCharacter.percentage += 5;
+    }
+    if (
+      matchedCharacter.height >= character.height - 100 &&
+      matchedCharacter.height <= character.height + 100
+    ) {
+      matchedCharacter.percentage += 17;
+    }
+    if (
+      matchedCharacter.weight >= character.weight - 100 &&
+      matchedCharacter.weight <= character.weight + 100
+    ) {
+      matchedCharacter.percentage += 23;
+    }
+
+    return matchedCharacter;
+  });
+  return { character, matches: percentageMatches };
+};
+
+const getMatchedCharacters = character => {
+  const {
+    name,
+    species,
+    eyeColor,
+    birthYear,
+    homePlanet,
+    height,
+    weight
+  } = character;
+  const query = {
+    name: { $ne: name },
+    $or: [{ eyeColor }, { homePlanet }]
+  };
+  if (height) {
+    query["$or"].push({
+      height: {
+        $gte: height - 100,
+        $lte: height + 100
+      }
+    });
+  }
+  if (weight) {
+    query["$or"].push({
+      weight: {
+        $gte: weight - 100,
+        $lte: weight + 100
+      }
+    });
+  }
+  if (birthYear) {
+    query["$or"].push({
+      birthYear: {
+        $gte: birthYear - 100,
+        $lte: birthYear + 100
+      }
+    });
+  }
+  if (species.length > 0) {
+    query["$or"].push({ species: species });
+  }
+
+  return CharacterModel.find(query)
+    .lean()
+    .then(matches => {
+      return { character, matches };
+    });
+};
+
 const CharacterType = new GraphQLObjectType({
   name: "Character",
   fields: () => ({
-    // _id: {type: GraphQLString},
     name: { type: GraphQLString },
+    eyeColor: { type: GraphQLString },
+    species: { type: new GraphQLList(GraphQLString) },
+    percentage: { type: GraphQLInt },
+    birthYear: { type: GraphQLString },
+    homePlanet: { type: GraphQLString },
     matches: { type: new GraphQLList(CharacterType) }
   })
 });
@@ -28,82 +129,15 @@ const RootQuery = new GraphQLObjectType({
       resolve(parentValue, args) {
         return connectDB()
           .then(() => CharacterModel.findOne({ name: args.name }))
-          .then(character => {
-            const {
-              name,
-              species,
-              eyeColor,
-              birthYear,
-              homePlanet,
-              height,
-              weight
-            } = character;
-            const query = {
-              $or: [
-                { eyeColor },
-                { homePlanet },
-                {
-                  birthYear: {
-                    $gte: birthYear - 100,
-                    $lte: birthYear + 100
-                  }
-                },
-                {
-                  height: { $gte: height - 100, $lte: height + 100 }
-                },
-                {
-                  weight: { $gte: weight - 100, $lte: weight + 100 }
-                }
-              ]
-            };
-            if (species.length > 0) {
-              query["$or"].push({ species: species });
-            }
-
-            return CharacterModel.find(query).then(matches => {
-              return { character, matches };
-            });
-          })
+          .then(getMatchedCharacters)
+          .then(countPercentage)
+          .then(prepareData)
           .then(({ character, matches }) => {
-            // console.log(character);
-            // console.log(matches);
-            const percentageMatches = matches.map(matchedCharacter => {
-              // console.log(matchedCharacter);
-              // const percentage = Object.keys(
-              //   matchedCharacter.toObject()
-              // ).reduce((percentageAcc, field) => {
-              //   console.log(character[field], matchedCharacter[field]);
-              //   return character[field] === matchedCharacter[field]
-              //     ? percentageAcc + 10
-              //     : percentageAcc;
-              // }, 0);
-              // console.log(character, matchedCharacter.toObject());
-              // console.log(percentage);
-              let percentage = 0;
-              console.log(
-                typeof character.species,
-                typeof matchedCharacter.species
-              );
-              console.log(character.species, matchedCharacter.species);
-              if (character.species == matchedCharacter.species) {
-                percentage += 30;
-                console.log(percentage);
-              } else {
-                console.log("nope");
-              }
-
-              // match = matchedCharacter;
-              return matchedCharacter;
-            });
-
-            return { character, percentageMatches };
-          })
-          .then(data => {
-            // console.log(data);
-            return data;
+            const topMatches = matches
+              .sort((a, b) => b.percentage - a.percentage)
+              .slice(0, 5);
+            return { name: character.name, matches: topMatches };
           });
-        // .then(() => ({ name: 5 }));
-        // return { name: 5 };
       }
     }
   }
