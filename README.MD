@@ -29,6 +29,10 @@
 }
 ```
 
+## Import data
+
+`npm run importData`
+
 ## Run
 
 `npm start`
