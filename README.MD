@@ -18,6 +18,17 @@
 - Height / 17% / max difference = 100 cm
 - Weight / 23% / max difference = 100 kg
 
+## Config
+
+"./config/default.json"
+
+```
+{
+  "mongoURI": "mongodb://localhost/swapi",
+  "port": 3341
+}
+```
+
 ## Run
 
 `npm start`
