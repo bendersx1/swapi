@@ -1,6 +1,6 @@
 import axios from "axios";
 import mongoose from "mongoose";
-import { connectDB } from "../config/db.js";
+import { connectDB } from "./config/db.js";
 import { CharacterModel } from "./models/character.js";
 
 const birthYearSign = {

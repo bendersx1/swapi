@@ -1,14 +1,21 @@
-import graphql, { GraphQLInt } from "graphql";
-import mongoose from "mongoose";
-import { connectDB } from "../../config/db.js";
-import { CharacterModel } from "../models/character.js";
-
-const {
+import {
   GraphQLObjectType,
   GraphQLSchema,
   GraphQLString,
-  GraphQLList
-} = graphql;
+  GraphQLList,
+  GraphQLInt
+} from "graphql";
+import mongoose from "mongoose";
+import { connectDB } from "../config/db.js";
+import { CharacterModel } from "../models/character.js";
+
+// const {
+//   GraphQLObjectType,
+//   GraphQLSchema,
+//   GraphQLString,
+//   GraphQLList,
+//   GraphQLInt
+// } = graphql;
 
 const prepareData = ({ character, matches }) => {
   const preparedMatches = matches.map(matchedCharacter => {
